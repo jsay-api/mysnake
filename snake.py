@@ -26,12 +26,12 @@ p2 = Point()
 
 class HorizontalLine(object):
 	
-	def __init__(self, xleft, xright, y, symb = "*"):
+	def __init__(self, xleft, xright, y = 0, symb = "*"):
 		self.xleft = xleft
 		self.xright = xright
 		self.y = y
 		self.symb = symb
-	def pdraw(self):	
+	def ldraw(self):	
 		plist = []
 		for i in range(self.xleft, self.xright):
 			p = Point(i, self.y, self.symb)
@@ -39,7 +39,23 @@ class HorizontalLine(object):
 		for i in plist: 
 			i.draw()
 
+class VerticalLine(object):
+	
+	def __init__(self, x, yup, ybottom, symb = "*"):
+		self.x = x
+		self.yup = yup
+		self.ybottom = ybottom
+		self.symb = symb
+	def ldraw(self):	
+		plist = []
+		for i in range(self.yup, self.ybottom):
+			p = Point(self.x, i, self.symb)
+			plist.append(p)
+		for i in plist: 
+			i.draw()
 
 h1 = HorizontalLine(3,10,20,"+")
-h1.pdraw()		
+h1.ldraw()	
+h2 = VerticalLine(3, 20, 25, "-")
+h2.ldraw()
 
