@@ -17,9 +17,29 @@ class Point(object):
 		self.y = y
 		self.sym = sym
 	def draw(self):
-		print("\033[%d;%dH%s" % (self.x, self.y, self.sym))
+		print("\033[%d;%dH%s" % (self.y, self.x, self.sym))
 
 p1 = Point(10,20,';')
 p2 = Point()
-p1.draw()
-p2.draw()
+# p1.draw()
+# p2.draw()
+
+class HorizontalLine(object):
+	
+	def __init__(self, xleft, xright, y, symb = "*"):
+		self.xleft = xleft
+		self.xright = xright
+		self.y = y
+		self.symb = symb
+	def pdraw(self):	
+		plist = []
+		for i in range(self.xleft, self.xright):
+			p = Point(i, self.y, self.symb)
+			plist.append(p)
+		for i in plist: 
+			i.draw()
+
+
+h1 = HorizontalLine(3,10,20,"+")
+h1.pdraw()		
+
