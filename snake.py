@@ -32,13 +32,20 @@ class Point(object):
 		self.x = x
 		self.y = y
 		self.sym = sym
+	
 	def draw(self):
 		print("\033[%d;%dH%s" % (self.y, self.x, self.sym))
 
-p1 = Point(10,20,';')
-p2 = Point()
-# p1.draw()
-# p2.draw()
+	def shift(self, offset, direction):
+		if direction == RIGHT:
+			self.x = self.x + offset
+		elif direction == LEFT:
+			self.x = self.x - offset
+		elif direction == UP:
+			self.y = self.y - offset
+		elif direction == DOWN:
+			self.y = self.y + offset
+
 
 class Figure(object):
 	# def __init__(self):
@@ -80,8 +87,38 @@ class VerticalLine(Figure):
 		return self.plist
 
 
-h1 = HorizontalLine(3,10,20,"+")
-h1.pappend(), h1.ldraw()	
-h2 = VerticalLine(3, 20, 25, "-")
-h2.pappend(), h2.ldraw()
+class Snake(Figure):
+	plist2 = []
+	def __init__(self, tail, length, direction):
+		self.tail = tail
+		self.length = length
+		self.direction = direction
+
+	def move(self):
+		for i in range(length):
+			p = Point(tail)
+			p.shift(i, direction)
+			plist.append(p)
+
+
+class Direction(object):
+	LEFT
+	RIGHT
+	UP
+	DOWN
+
+
+
+
+def main():
+	p1 = Point(10,20,'*')
+	p2 = Point()
+	h1 = HorizontalLine(3,10,20,"+")
+	h1.pappend()	
+	h2 = VerticalLine(3, 20, 25, "-")
+	h2.pappend()
+	snake = Snake(p1, 4, Direction.LEFT)
+
+if __name__ == '__main__':
+    main()
 
