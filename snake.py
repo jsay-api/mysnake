@@ -37,13 +37,13 @@ class Point(object):
 		print("\033[%d;%dH%s" % (self.y, self.x, self.sym))
 
 	def shift(self, offset, direction):
-		if direction == RIGHT:
+		if direction == Direction.RIGHT:
 			self.x = self.x + offset
-		elif direction == LEFT:
+		elif direction == Direction.LEFT:
 			self.x = self.x - offset
-		elif direction == UP:
+		elif direction == Direction.UP:
 			self.y = self.y - offset
-		elif direction == DOWN:
+		elif direction == Direction.DOWN:
 			self.y = self.y + offset
 
 
@@ -95,17 +95,23 @@ class Snake(Figure):
 		self.direction = direction
 
 	def move(self):
-		for i in range(length):
-			p = Point(tail)
-			p.shift(i, direction)
-			plist.append(p)
+		for i in range(self.length):
+			p = Point(self.tail.x, self.tail.y)
+			p.shift(i, self.direction)
+			self.plist2.append(p)
+		for i in self.plist2:
+			print (i.x, i.y)
+		return self.plist2
+
+
 
 
 class Direction(object):
-	LEFT
-	RIGHT
-	UP
-	DOWN
+	LEFT = 0
+	RIGHT = 1
+	UP = 2
+	DOWN = 3
+	direction = [LEFT, RIGHT, UP, DOWN]
 
 
 
@@ -118,6 +124,7 @@ def main():
 	h2 = VerticalLine(3, 20, 25, "-")
 	h2.pappend()
 	snake = Snake(p1, 4, Direction.LEFT)
+	snake.move()
 
 if __name__ == '__main__':
     main()
