@@ -46,6 +46,10 @@ class Point(object):
 		elif direction == Direction.DOWN:
 			self.y = self.y + offset
 
+	def clear(self):
+		self.sym = " "
+		self.draw()
+
 
 class Figure(object):
 	# def __init__(self):
@@ -89,19 +93,35 @@ class VerticalLine(Figure):
 
 class Snake(Figure):
 	plist2 = []
+	#head = Point()
 	def __init__(self, tail, length, direction):
 		self.tail = tail
 		self.length = length
 		self.direction = direction
 
-	def move(self):
+	def position(self):
 		for i in range(self.length):
 			p = Point(self.tail.x, self.tail.y)
 			p.shift(i, self.direction)
 			self.plist2.append(p)
-		for i in self.plist2:
-			print (i.x, i.y)
+			p.draw()
 		return self.plist2
+
+	def GetNextPoint(self):
+		head = self.plist2[-1]
+		nextPoint = Point(head.x, head.y)
+		nextPoint.shift(1, self.direction)
+		return nextPoint
+
+
+	def move(self):
+		tail = Point(self.plist2[0].x, self.plist2[0].y)
+		del self.plist2[0]
+		head = self.GetNextPoint()
+		self.plist2.append(head)
+
+		tail.clear()
+		head.draw()
 
 
 
@@ -124,7 +144,8 @@ def main():
 	h2 = VerticalLine(3, 20, 25, "-")
 	h2.pappend()
 	snake = Snake(p1, 4, Direction.LEFT)
-	snake.move()
+	snake.position(), snake.move()
+
 
 if __name__ == '__main__':
     main()
