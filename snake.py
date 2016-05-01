@@ -4,6 +4,7 @@ __author__='julia sayapina'
 import os
 import turtle
 from tkinter import *
+import time
 
 x1 = 20
 y1 = 30
@@ -116,9 +117,13 @@ class Snake(Figure):
 
 	def move(self):
 		tail = Point(self.plist2[0].x, self.plist2[0].y)
+		#print (tail.x, tail.y)
 		del self.plist2[0]
 		head = self.GetNextPoint()
+		#print (head.x, head.y)
 		self.plist2.append(head)
+		# for i in self.plist2:
+		# 	print (i.x, i.y)
 
 		tail.clear()
 		head.draw()
@@ -144,7 +149,10 @@ def main():
 	h2 = VerticalLine(3, 20, 25, "-")
 	h2.pappend()
 	snake = Snake(p1, 4, Direction.LEFT)
-	snake.position(), snake.move()
+	snake.position()
+	for i in range(6):
+		snake.move()
+		time.sleep(0.5)
 
 
 if __name__ == '__main__':
