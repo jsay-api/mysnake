@@ -10,23 +10,6 @@ x1 = 20
 y1 = 30
 sym1 = '*'
 
-# #creating canvas
-# root = Tk()
-# #setting the canvas' name
-# root.title("Snake game")
-# #launching the canvas
-# root.mainloop()
-
-# #canvas sizes vars
-# WIDTH = 800
-# HEIGHT = 600
-
-# # создаем экземпляр класса Canvas (его мы еще будем использовать) и заливаем все зеленым цветом
-# c = Canvas(root, width=WIDTH, height=HEIGHT, bg="#003300")
-# c.grid()
-# # Наводим фокус на Canvas, чтобы мы могли ловить нажатия клавиш
-# c.focus_set()
-
 
 class Point(object):
 	def __init__(self, x = 0, y = 0, sym = "*"):
@@ -53,8 +36,6 @@ class Point(object):
 
 
 class Figure(object):
-	# def __init__(self):
-	# 	self.plist = []
 	plist = [] 
 	def ldraw(self):
 		for i in self.plist: 
@@ -94,7 +75,6 @@ class VerticalLine(Figure):
 
 class Snake(Figure):
 	plist2 = []
-	#head = Point()
 	def __init__(self, tail, length, direction):
 		self.tail = tail
 		self.length = length
@@ -117,13 +97,9 @@ class Snake(Figure):
 
 	def move(self):
 		tail = Point(self.plist2[0].x, self.plist2[0].y)
-		#print (tail.x, tail.y)
 		del self.plist2[0]
 		head = self.GetNextPoint()
-		#print (head.x, head.y)
 		self.plist2.append(head)
-		# for i in self.plist2:
-		# 	print (i.x, i.y)
 
 		tail.clear()
 		head.draw()
