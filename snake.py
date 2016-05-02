@@ -5,6 +5,7 @@ import os
 import turtle
 from tkinter import *
 import time
+import sys,tty,termios
 
 x1 = 20
 y1 = 30
@@ -28,131 +29,173 @@ sym1 = '*'
 # c.focus_set()
 
 
+class _Getch:
+    def __call__(self):
+            fd = sys.stdin.fileno()
+            old_settings = termios.tcgetattr(fd)
+            try:
+                tty.setraw(sys.stdin.fileno())
+                ch = sys.stdin.read(3)
+            finally:
+                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+            return ch
+
+
 class Point(object):
-	def __init__(self, x = 0, y = 0, sym = "*"):
-		self.x = x
-		self.y = y
-		self.sym = sym
-	
-	def draw(self):
-		print("\033[%d;%dH%s" % (self.y, self.x, self.sym))
+    def __init__(self, x = 0, y = 0, sym = "*"):
+        self.x = x
+        self.y = y
+        self.sym = sym
+    
+    def draw(self):
+        print("\033[%d;%dH%s" % (self.y, self.x, self.sym))
 
-	def shift(self, offset, direction):
-		if direction == Direction.RIGHT:
-			self.x = self.x + offset
-		elif direction == Direction.LEFT:
-			self.x = self.x - offset
-		elif direction == Direction.UP:
-			self.y = self.y - offset
-		elif direction == Direction.DOWN:
-			self.y = self.y + offset
+    def shift(self, offset, direction):
+        if direction == Direction.RIGHT:
+            self.x = self.x + offset
+        elif direction == Direction.LEFT:
+            self.x = self.x - offset
+        elif direction == Direction.UP:
+            self.y = self.y - offset
+        elif direction == Direction.DOWN:
+            self.y = self.y + offset
 
-	def clear(self):
-		self.sym = " "
-		self.draw()
+    def clear(self):
+        self.sym = " "
+        self.draw()
 
 
 class Figure(object):
-	# def __init__(self):
-	# 	self.plist = []
-	plist = [] 
-	def ldraw(self):
-		for i in self.plist: 
-			i.draw()
+    # def __init__(self):
+    #   self.plist = []
+    plist = [] 
+    def ldraw(self):
+        for i in self.plist: 
+            i.draw()
 
 
 class HorizontalLine(Figure):
-	def __init__(self, xleft, xright, y = 0, symb = "*"):
-		super().__init__()
-		self.xleft = xleft
-		self.xright = xright
-		self.y = y
-		self.symb = symb
+    def __init__(self, xleft, xright, y = 0, symb = "*"):
+        super().__init__()
+        self.xleft = xleft
+        self.xright = xright
+        self.y = y
+        self.symb = symb
 
-	def pappend(self):
-		for i in range(self.xleft, self.xright):
-			p = Point(i, self.y, self.symb)
-			self.plist.append(p)
-		return self.plist
-		
+    def pappend(self):
+        for i in range(self.xleft, self.xright):
+            p = Point(i, self.y, self.symb)
+            self.plist.append(p)
+        return self.plist
+        
 
 class VerticalLine(Figure):
-	def __init__(self, x, yup, ybottom, symb = "*"):
-		super().__init__()
-		#Figure.__init__(self)
-		self.x = x
-		self.yup = yup
-		self.ybottom = ybottom
-		self.symb = symb
-	
-	def pappend(self):	
-		for i in range(self.yup, self.ybottom):
-			p = Point(self.x, i, self.symb)
-			self.plist.append(p)
-		return self.plist
+    def __init__(self, x, yup, ybottom, symb = "*"):
+        super().__init__()
+        #Figure.__init__(self)
+        self.x = x
+        self.yup = yup
+        self.ybottom = ybottom
+        self.symb = symb
+    
+    def pappend(self):  
+        for i in range(self.yup, self.ybottom):
+            p = Point(self.x, i, self.symb)
+            self.plist.append(p)
+        return self.plist
 
 
 class Snake(Figure):
-	plist2 = []
-	#head = Point()
-	def __init__(self, tail, length, direction):
-		self.tail = tail
-		self.length = length
-		self.direction = direction
+    plist2 = []
+    #head = Point()
+    def __init__(self, tail, length, direction):
+        self.tail = tail
+        self.length = length
+        self.direction = direction
 
-	def position(self):
-		for i in range(self.length):
-			p = Point(self.tail.x, self.tail.y)
-			p.shift(i, self.direction)
-			self.plist2.append(p)
-			p.draw()
-		return self.plist2
+    def position(self):
+        for i in range(self.length):
+            p = Point(self.tail.x, self.tail.y)
+            p.shift(i, self.direction)
+            self.plist2.append(p)
+            p.draw()
+        return self.plist2
 
-	def GetNextPoint(self):
-		head = self.plist2[-1]
-		nextPoint = Point(head.x, head.y)
-		nextPoint.shift(1, self.direction)
-		return nextPoint
+    def GetNextPoint(self):
+        head = self.plist2[-1]
+        nextPoint = Point(head.x, head.y)
+        nextPoint.shift(1, self.direction)
+        return nextPoint
 
 
-	def move(self):
-		tail = Point(self.plist2[0].x, self.plist2[0].y)
-		#print (tail.x, tail.y)
-		del self.plist2[0]
-		head = self.GetNextPoint()
-		#print (head.x, head.y)
-		self.plist2.append(head)
-		# for i in self.plist2:
-		# 	print (i.x, i.y)
+    def move(self):
+        tail = Point(self.plist2[0].x, self.plist2[0].y)
+        #print (tail.x, tail.y)
+        del self.plist2[0]
+        head = self.GetNextPoint()
+        #print (head.x, head.y)
+        self.plist2.append(head)
+        # for i in self.plist2:
+        #   print (i.x, i.y)
 
-		tail.clear()
-		head.draw()
+        tail.clear()
+        head.draw()
+
+    def get(self):
+        inkey = _Getch()
+        while(1):
+            k = inkey()
+            if k == 27: break
+            if k == '\x1b[A':
+                self.direction = Direction.UP
+                time.sleep(0.1)
+                break
+            elif k == '\x1b[B':
+                self.direction = Direction.DOWN
+                time.sleep(0.1)
+                break
+            elif k == '\x1b[C':
+                self.direction = Direction.RIGHT
+                time.sleep(0.1)
+                break
+            elif k == '\x1b[D':
+                #print ("left")
+                self.direction = Direction.LEFT
+                time.sleep(0.1)
+                break
+            else:
+                print ("not an arrow key!")
+                time.sleep(0.1)
+                break
 
 
 
 
 class Direction(object):
-	LEFT = 0
-	RIGHT = 1
-	UP = 2
-	DOWN = 3
-	direction = [LEFT, RIGHT, UP, DOWN]
+    LEFT = 0
+    RIGHT = 1
+    UP = 2
+    DOWN = 3
+    direction = [LEFT, RIGHT, UP, DOWN]
 
 
 
 
 def main():
-	p1 = Point(10,20,'*')
-	p2 = Point()
-	h1 = HorizontalLine(3,10,20,"+")
-	h1.pappend()	
-	h2 = VerticalLine(3, 20, 25, "-")
-	h2.pappend()
-	snake = Snake(p1, 4, Direction.LEFT)
-	snake.position()
-	for i in range(6):
-		snake.move()
-		time.sleep(0.5)
+    p1 = Point(10,20,'*')
+    p2 = Point()
+    h1 = HorizontalLine(3,10,20,"+")
+    h1.pappend()    
+    h2 = VerticalLine(3, 20, 25, "-")
+    h2.pappend()
+    snake = Snake(p1, 4, Direction.LEFT)
+
+    snake.position()
+    snake.get()
+    for i in range(6):
+        snake.move()
+        time.sleep(0.5)
+    
 
 
 if __name__ == '__main__':
