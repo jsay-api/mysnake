@@ -4,41 +4,9 @@ __author__='julia sayapina'
 import os
 import turtle
 from tkinter import *
-import time
+from time import sleep
 import sys,tty,termios
-
-x1 = 20
-y1 = 30
-sym1 = '*'
-
-# #creating canvas
-# root = Tk()
-# #setting the canvas' name
-# root.title("Snake game")
-# #launching the canvas
-# root.mainloop()
-
-# #canvas sizes vars
-# WIDTH = 800
-# HEIGHT = 600
-
-# # создаем экземпляр класса Canvas (его мы еще будем использовать) и заливаем все зеленым цветом
-# c = Canvas(root, width=WIDTH, height=HEIGHT, bg="#003300")
-# c.grid()
-# # Наводим фокус на Canvas, чтобы мы могли ловить нажатия клавиш
-# c.focus_set()
-
-
-class _Getch:
-    def __call__(self):
-            fd = sys.stdin.fileno()
-            old_settings = termios.tcgetattr(fd)
-            try:
-                tty.setraw(sys.stdin.fileno())
-                ch = sys.stdin.read(3)
-            finally:
-                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-            return ch
+import getch
 
 
 class Point(object):
@@ -142,31 +110,26 @@ class Snake(Figure):
         head.draw()
 
     def get(self):
-        inkey = _Getch()
-        while(1):
-            k = inkey()
-            if k == 27: break
-            if k == '\x1b[A':
-                self.direction = Direction.UP
-                time.sleep(0.1)
-                break
-            elif k == '\x1b[B':
-                self.direction = Direction.DOWN
-                time.sleep(0.1)
-                break
-            elif k == '\x1b[C':
-                self.direction = Direction.RIGHT
-                time.sleep(0.1)
-                break
-            elif k == '\x1b[D':
-                #print ("left")
-                self.direction = Direction.LEFT
-                time.sleep(0.1)
-                break
-            else:
-                print ("not an arrow key!")
-                time.sleep(0.1)
-                break
+        key = getch.getch()
+        if key == "e":
+            self.direction = Direction.UP
+            sleep(0.1)
+        elif key == "s":
+            self.direction = Direction.LEFT
+            sleep(0.1)
+        elif key == "x":
+            self.direction = Direction.DOWN
+            sleep(0.1)
+        elif key == "d":
+            self.direction = Direction.RIGHT
+            sleep(0.1)
+        elif key == "q":
+            print ("Exit")
+            sys.exit(0)
+        else: 
+            print ("Game over!")
+            sys.exit(0)
+
 
 
 
@@ -182,19 +145,22 @@ class Direction(object):
 
 
 def main():
-    p1 = Point(10,20,'*')
+
+    x1 = 20
+    y1 = 30
+    sym1 = '*'
+    p1 = Point(50,20,'*')
     p2 = Point()
     h1 = HorizontalLine(3,10,20,"+")
     h1.pappend()    
     h2 = VerticalLine(3, 20, 25, "-")
     h2.pappend()
     snake = Snake(p1, 4, Direction.LEFT)
-
     snake.position()
-    snake.get()
-    for i in range(6):
+    
+    while True:
+        snake.get()
         snake.move()
-        time.sleep(0.5)
     
 
 
