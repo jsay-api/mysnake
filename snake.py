@@ -8,6 +8,29 @@ from time import sleep
 import sys,tty,termios
 import getch
 
+"""For control use keys:
+s - left
+d - right
+e - up
+x - down
+q - escape
+any other key – game over"""
+
+
+try : # on windows
+    from msvcrt import getch
+except ImportError : # on unix like systems
+    import sys, tty, termios
+    def getch() :
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try :
+            tty.setraw(fd)
+            ch = sys.stdin.read(1)
+        finally :
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return ch
+
 
 class Point(object):
     def __init__(self, x = 0, y = 0, sym = "*"):
@@ -110,25 +133,30 @@ class Snake(Figure):
         head.draw()
 
     def get(self):
-        key = getch.getch()
-        if key == "e":
-            self.direction = Direction.UP
-            sleep(0.1)
-        elif key == "s":
-            self.direction = Direction.LEFT
-            sleep(0.1)
-        elif key == "x":
-            self.direction = Direction.DOWN
-            sleep(0.1)
-        elif key == "d":
-            self.direction = Direction.RIGHT
-            sleep(0.1)
-        elif key == "q":
-            print ("Exit")
-            sys.exit(0)
-        else: 
-            print ("Game over!")
-            sys.exit(0)
+        while True:
+            key = getch()
+            if key == "e":
+                self.direction = Direction.UP
+                #sleep(0.1)
+                break
+            elif key == "s":
+                self.direction = Direction.LEFT
+                #sleep(0.1)
+                break
+            elif key == "x":
+                self.direction = Direction.DOWN
+                #sleep(0.1)
+                break
+            elif key == "d":
+                self.direction = Direction.RIGHT
+                #sleep(0.1)
+                break
+            elif key == "q":
+                print ("Exit")
+                sys.exit(0)
+        # else: 
+        #     print ("Game over!")
+        #     sys.exit(0)
 
 
 
@@ -145,7 +173,7 @@ class Direction(object):
 
 
 def main():
-
+    os.system("clear")
     x1 = 20
     y1 = 30
     sym1 = '*'
@@ -157,10 +185,16 @@ def main():
     h2.pappend()
     snake = Snake(p1, 4, Direction.LEFT)
     snake.position()
+    #global key
+    
+    
     
     while True:
-        snake.get()
         snake.move()
+        sleep(0.1)
+        snake.get()
+        
+        
     
 
 
