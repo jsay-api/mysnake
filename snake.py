@@ -5,8 +5,8 @@ import os
 import turtle
 from tkinter import *
 from time import sleep
-import sys,tty,termios
 import getch
+import threading, os, time, itertools, queue
 
 """For control use keys:
 s - left
@@ -19,7 +19,7 @@ any other key – game over"""
 
 try : # on windows
     from msvcrt import getch
-except ImportError : # on unix like systems
+except ImportError : # on unix systems
     import sys, tty, termios
     def getch() :
         fd = sys.stdin.fileno()
@@ -31,6 +31,23 @@ except ImportError : # on unix like systems
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
 
+
+# this will allow us to communicate between the two threads
+# Queue is a FIFO list, the param is the size limit, 0 for infinite
+commands = queue.Queue(0)
+
+# the thread reading the command from the user input     
+def control(commands) :
+
+    while 1 :
+
+        key = getch()
+        commands.put(key) # put the command in the queue so the other thread can read it
+
+        #  don't forget to quit here as well, or you will have memory leaks
+        if key == "q" :
+            print ("Exit")
+            sys.exit(0)
 
 class Point(object):
     def __init__(self, x = 0, y = 0, sym = "*"):
@@ -119,22 +136,35 @@ class Snake(Figure):
         return nextPoint
 
 
-    def move(self):
-        tail = Point(self.plist2[0].x, self.plist2[0].y)
-        #print (tail.x, tail.y)
-        del self.plist2[0]
-        head = self.GetNextPoint()
-        #print (head.x, head.y)
-        self.plist2.append(head)
-        # for i in self.plist2:
-        #   print (i.x, i.y)
+    def move(self, commands):
+        key = ""
+        
+        while True:
+            tail = Point(self.plist2[0].x, self.plist2[0].y)
+            del self.plist2[0]
+            head = self.GetNextPoint()
+            self.plist2.append(head)
+            # parsing the command queue
+            try:
+               # false means "do not block the thread if the queue is empty"
+               # a second parameter can set a millisecond time out
+               key = commands.get(False) 
+            except queue.Empty:
+               key = ""
+
+            # behave according to the command
+            self.get(key)
+
 
         tail.clear()
         head.draw()
+        sleep(0.1)
 
-    def get(self):
+        
+
+    def get(self, key):
         while True:
-            key = getch()
+            
             if key == "e":
                 self.direction = Direction.UP
                 #sleep(0.1)
@@ -185,14 +215,21 @@ def main():
     h2.pappend()
     snake = Snake(p1, 4, Direction.LEFT)
     snake.position()
-    #global key
+    # then start the two threads
+    displayer = threading.Thread(None, # always to None since the ThreadGroup class is not implemented yet
+                            snake.move, # the function the thread will run
+                            None, # doo, don't remember and too lazy to look in the doc
+                            (commands,), # *args to pass to the function
+                             {}) # **kwargs to pass to the function
+
+    controler = threading.Thread(None, control, None, (commands,), {})
+    global key
+    key = getch()
     
     
-    
-    while True:
-        snake.move()
-        sleep(0.1)
-        snake.get()
+    # while True:
+    #     snake.move()
+    # snake.get()
         
         
     
