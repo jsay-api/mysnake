@@ -2,8 +2,6 @@
 __author__='julia sayapina'
 
 import os
-import turtle
-from tkinter import *
 from time import sleep
 import sys,tty,termios
 import getch
@@ -145,7 +143,7 @@ class Direction(object):
 
 
 def main():
-
+    os.
     x1 = 20
     y1 = 30
     sym1 = '*'
@@ -160,6 +158,7 @@ def main():
     
     while True:
         snake.get()
+        sleep(0.1)
         snake.move()
     
 
