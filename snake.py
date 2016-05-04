@@ -143,7 +143,7 @@ class Direction(object):
 
 
 def main():
-    os.
+    os.system("clear")
     x1 = 20
     y1 = 30
     sym1 = '*'
