@@ -142,9 +142,9 @@ class Snake(Figure):
     def eat(self, food):
         head = self.GetNextPoint()
         if head.crossed(food):
-            food.reset()
             food.sym = head.sym
             self.body.append(food)
+            #food.__init__('$')
             return True
 
 
@@ -165,9 +165,10 @@ class Food(Figure):
         food = Point(self.x, self.y, self.sym)
         food.draw()
 
-    def reset(self):
-        self.x = randint(1, MAX_X)
-        self.y = randint(1, MAX_Y)
+    # def reset(self):
+    #     self.x = randint(1, MAX_X)
+    #     self.y = randint(1, MAX_Y)
+    #     self.sym = sym
         
 
 
@@ -192,30 +193,32 @@ def main():
 
     p1 = Point(50,20,'*')
     p2 = Point(100, 40)
+    fsym = '@'
 
     # h1 = HorizontalLine(3,10,20,"+")
     # h1.pappend()    
     # h2 = VerticalLine(3, 20, 25, "-")
     # h2.pappend()
     snake = Snake(p1, 4, Direction.LEFT, window)
-    food = Food('$')
+    food = Food(fsym)
 
     while True:
         window.clear()
         window.border(0)
         snake.render()
-        food.render()
+        #food.render()
         window.addstr(0, 5, 'George the Snake')
         event = window.getch()
 
         while True:
             event = window.getch()
             food.render()
-            # if snake.eat(food):
-            #     food.reset()
+            if snake.eat(food):
+                food.__init__(fsym)
+                food.render()
             snake.get(event) 
             snake.update()
-            sleep(0.5)
+            sleep(0.1)
         # if snake.nabrak:
         #     break
 
