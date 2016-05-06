@@ -9,8 +9,8 @@ from random import randint
 
 WIDTH = 120
 HEIGHT = 30
-MAX_X = WIDTH - 2
-MAX_Y = HEIGHT - 2
+MAX_X = WIDTH - 5
+MAX_Y = HEIGHT - 5
 TIMEOUT = 100
 x1 = 20
 y1 = 30
@@ -93,6 +93,7 @@ class Snake(Figure):
         self.length = length
         self.direction = direction
         self.window = window
+        self.hit_score = 0
 
     def render(self):
         for i in range(self.length):
@@ -139,12 +140,20 @@ class Snake(Figure):
             print ("Exit")
             sys.exit(0)
 
+    @property
+    def score(self):
+        return 'Score : {}'.format(self.hit_score)
+
     def eat(self, food):
         head = self.GetNextPoint()
         if head.crossed(food):
+            self.hit_score += 1
             food.sym = head.sym
             self.body.append(food)
-            #food.__init__('$')
+            food.clear()
+            self.update()
+            # food.__init__('$')
+            # food.render()
             return True
 
 
@@ -155,7 +164,7 @@ class Snake(Figure):
         #     sys.exit(0)
 
 
-class Food(Figure):
+class Food(Point):
     def __init__(self, sym):
         self.x = randint(1, MAX_X)
         self.y = randint(1, MAX_Y)
@@ -208,11 +217,14 @@ def main():
         snake.render()
         #food.render()
         window.addstr(0, 5, 'George the Snake')
+        window.addstr(29, 5, snake.score)
         event = window.getch()
 
         while True:
             event = window.getch()
             food.render()
+            #window.addstr(29, 5, snake.score)
+            #snake.eat(food)
             if snake.eat(food):
                 food.__init__(fsym)
                 food.render()
