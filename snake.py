@@ -1,136 +1,195 @@
 #coding: utf-8
 __author__='julia sayapina'
 
-import os
-import turtle
-from tkinter import *
-import time
+import os, sys
+from time import sleep
+import curses
+from curses import KEY_RIGHT, KEY_LEFT, KEY_DOWN, KEY_UP
+from random import randint
 
+WIDTH = 120
+HEIGHT = 30
+MAX_X = WIDTH - 2
+MAX_Y = HEIGHT - 2
+TIMEOUT = 100
 x1 = 20
 y1 = 30
 sym1 = '*'
 
-
 class Point(object):
-	def __init__(self, x = 0, y = 0, sym = "*"):
-		self.x = x
-		self.y = y
-		self.sym = sym
-	
-	def draw(self):
-		print("\033[%d;%dH%s" % (self.y, self.x, self.sym))
+    def __init__(self, x = 0, y = 0, sym = "*"):
+        self.x = x
+        self.y = y
+        self.sym = sym
+    
+    def draw(self):
+        print("\033[%d;%dH%s" % (self.y, self.x, self.sym))
 
-	def shift(self, offset, direction):
-		if direction == Direction.RIGHT:
-			self.x = self.x + offset
-		elif direction == Direction.LEFT:
-			self.x = self.x - offset
-		elif direction == Direction.UP:
-			self.y = self.y - offset
-		elif direction == Direction.DOWN:
-			self.y = self.y + offset
+    def shift(self, offset, direction):
+        if direction == Direction.RIGHT:
+            self.x += offset
+        elif direction == Direction.LEFT:
+            self.x -= offset
+        elif direction == Direction.UP:
+            self.y -= offset
+        elif direction == Direction.DOWN:
+            self.y += offset
 
-	def clear(self):
-		self.sym = " "
-		self.draw()
+    def clear(self):
+        self.sym = " "
+        self.draw()
+
+    def crossed(self, point):
+        return self.x == point.x and self.y == point.y
 
 
 class Figure(object):
-	plist = [] 
-	def ldraw(self):
-		for i in self.plist: 
-			i.draw()
-
-
-class HorizontalLine(Figure):
-	def __init__(self, xleft, xright, y = 0, symb = "*"):
-		super().__init__()
-		self.xleft = xleft
-		self.xright = xright
-		self.y = y
-		self.symb = symb
-
-	def pappend(self):
-		for i in range(self.xleft, self.xright):
-			p = Point(i, self.y, self.symb)
-			self.plist.append(p)
-		return self.plist
-		
-
-class VerticalLine(Figure):
-	def __init__(self, x, yup, ybottom, symb = "*"):
-		super().__init__()
-		#Figure.__init__(self)
-		self.x = x
-		self.yup = yup
-		self.ybottom = ybottom
-		self.symb = symb
-	
-	def pappend(self):	
-		for i in range(self.yup, self.ybottom):
-			p = Point(self.x, i, self.symb)
-			self.plist.append(p)
-		return self.plist
+    plist = [] 
+    def ldraw(self):
+        for i in self.plist: 
+            i.draw()
 
 
 class Snake(Figure):
-	plist2 = []
-	def __init__(self, tail, length, direction):
-		self.tail = tail
-		self.length = length
-		self.direction = direction
+    def __init__(self, tail, length, direction, window):
+        self.body = []
+        self.tail = tail
+        self.length = length
+        self.direction = direction
+        self.window = window
 
-	def position(self):
-		for i in range(self.length):
-			p = Point(self.tail.x, self.tail.y)
-			p.shift(i, self.direction)
-			self.plist2.append(p)
-			p.draw()
-		return self.plist2
+    @property
+    def ahead(self):
+        return self.GetNextPoint()
 
-	def GetNextPoint(self):
-		head = self.plist2[-1]
-		nextPoint = Point(head.x, head.y)
-		nextPoint.shift(1, self.direction)
-		return nextPoint
+    def render(self):
+        for i in range(self.length):
+            p = Point(self.tail.x, self.tail.y)
+            p.shift(i, self.direction)
+            self.body.append(p)
+            p.draw()
+        return self.body
 
-
-	def move(self):
-		tail = Point(self.plist2[0].x, self.plist2[0].y)
-		del self.plist2[0]
-		head = self.GetNextPoint()
-		self.plist2.append(head)
-
-		tail.clear()
-		head.draw()
+    def GetNextPoint(self):
+        head = self.body[-1]
+        nextPoint = Point(head.x, head.y)
+        nextPoint.shift(1, self.direction)
+        return nextPoint
 
 
+    def update(self):
+        tail = Point(self.body[0].x, self.body[0].y)
+        del self.body[0]
+        head = self.GetNextPoint()
+        self.body.append(head)
 
+        tail.clear()
+        head.draw()
+
+    def get(self, event):
+        if event == 32:
+            key = -1
+            while key != 32:
+                key = self.window.getch()
+        elif event == KEY_UP:
+            self.direction = Direction.UP
+        elif event == KEY_LEFT:
+            self.direction = Direction.LEFT
+        elif event == KEY_DOWN:
+            self.direction = Direction.DOWN
+        elif event == KEY_RIGHT:
+            self.direction = Direction.RIGHT
+        elif event == 27:
+            gameOver()
+
+
+    def eat(self, food):
+        if self.ahead.crossed(food):
+            food.sym = self.ahead.sym
+            self.body.append(food)
+            food.clear()
+            self.update()
+            return True
+
+    def hitborder(self):
+        for i in range(2):  #crossing top and left borders
+            for j in range(WIDTH+1):
+                if self.ahead.crossed(Point(i,j)) or self.ahead.crossed(Point(j,i)):
+                    return True
+        for i in range(HEIGHT, HEIGHT+1): #crossing the bottom border
+            for j in range(WIDTH+1):
+                if self.ahead.crossed(Point(j,i)):
+                    return True
+        for i in range(WIDTH-1, WIDTH+1):   #crossing the right border
+            for j in range(HEIGHT+1):
+                if self.ahead.crossed(Point(i,j)):
+                    return True
+
+    def eatbody(self):
+        for i in self.body:
+            if self.ahead.crossed(i):
+                return True
+
+
+class Food(Point):
+    def __init__(self, sym):
+        self.x = randint(2, MAX_X)
+        self.y = randint(2, MAX_Y)
+        self.sym = sym
+
+    def render(self):
+        food = Point(self.x, self.y, self.sym)
+        food.draw()
+     
 
 class Direction(object):
-	LEFT = 0
-	RIGHT = 1
-	UP = 2
-	DOWN = 3
-	direction = [LEFT, RIGHT, UP, DOWN]
+    LEFT = 0
+    RIGHT = 1
+    UP = 2
+    DOWN = 3
 
-
+def gameOver():
+    print ("Game over!")
+    sys.exit(0)
 
 
 def main():
-	p1 = Point(10,20,'*')
-	p2 = Point()
-	h1 = HorizontalLine(3,10,20,"+")
-	h1.pappend()	
-	h2 = VerticalLine(3, 20, 25, "-")
-	h2.pappend()
-	snake = Snake(p1, 4, Direction.LEFT)
-	snake.position()
-	for i in range(6):
-		snake.move()
-		time.sleep(0.5)
+    curses.initscr()
+    window = curses.newwin(HEIGHT, WIDTH, 0, 0)
+    window.timeout(TIMEOUT)
+    window.keypad(1)
+    curses.noecho()
+    curses.curs_set(0)
+    window.border(0)
+
+    p1 = Point(50,20,'*')
+    p2 = Point(2, 20)
+    fsym = '@'
+    snake = Snake(p1, 4, Direction.LEFT, window)
+    food = Food(fsym)
+
+    while True:
+        window.clear()
+        window.border(0)
+        snake.render()
+        window.addstr(0, 5, 'George the Snake')
+        event = window.getch()
+
+        while True:
+            event = window.getch()
+            food.render()
+            if snake.eat(food):
+                food.__init__(fsym)
+                food.render()
+            snake.get(event) 
+            snake.update()
+            sleep(0.1)
+            if snake.hitborder() or snake.eatbody():
+                gameOver()
+
+    curses.endwin()
+    
 
 
 if __name__ == '__main__':
     main()
-
