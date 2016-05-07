@@ -9,8 +9,8 @@ from random import randint
 
 WIDTH = 120
 HEIGHT = 30
-MAX_X = WIDTH - 5
-MAX_Y = HEIGHT - 5
+MAX_X = WIDTH - 2
+MAX_Y = HEIGHT - 2
 TIMEOUT = 100
 x1 = 20
 y1 = 30
@@ -53,47 +53,18 @@ class Figure(object):
             i.draw()
 
 
-
-# class HorizontalLine(Figure):
-#     def __init__(self, xleft, xright, y = 0, symb = "*"):
-#         super().__init__()
-#         self.xleft = xleft
-#         self.xright = xright
-#         self.y = y
-#         self.symb = symb
-
-#     def pappend(self):
-#         for i in range(self.xleft, self.xright):
-#             p = Point(i, self.y, self.symb)
-#             self.plist.append(p)
-#         return self.plist
-        
-
-# class VerticalLine(Figure):
-#     def __init__(self, x, yup, ybottom, symb = "*"):
-#         super().__init__()
-#         #Figure.__init__(self)
-#         self.x = x
-#         self.yup = yup
-#         self.ybottom = ybottom
-#         self.symb = symb
-    
-#     def pappend(self):  
-#         for i in range(self.yup, self.ybottom):
-#             p = Point(self.x, i, self.symb)
-#             self.plist.append(p)
-#         return self.plist
-
-
 class Snake(Figure):
-    body = []
-    #head = Point()
+    #body = []
     def __init__(self, tail, length, direction, window):
+        self.body = []
         self.tail = tail
         self.length = length
         self.direction = direction
         self.window = window
-        self.hit_score = 0
+
+    @property
+    def ahead(self):
+        return self.GetNextPoint()
 
     def render(self):
         for i in range(self.length):
@@ -137,18 +108,13 @@ class Snake(Figure):
             self.direction = Direction.RIGHT
             #sleep(0.1)
         elif event == 27:
-            print ("Exit")
-            sys.exit(0)
+            gameOver()
 
-    @property
-    def score(self):
-        return 'Score : {}'.format(self.hit_score)
 
     def eat(self, food):
-        head = self.GetNextPoint()
-        if head.crossed(food):
-            self.hit_score += 1
-            food.sym = head.sym
+        #head = self.GetNextPoint()
+        if self.ahead.crossed(food):
+            food.sym = self.ahead.sym
             self.body.append(food)
             food.clear()
             self.update()
@@ -156,30 +122,38 @@ class Snake(Figure):
             # food.render()
             return True
 
+    def hitborder(self):
+        #head = self.GetNextPoint()
+        for i in range(2):  #crossing top and left borders
+            for j in range(WIDTH+1):
+                if self.ahead.crossed(Point(i,j)) or self.ahead.crossed(Point(j,i)):
+                    return True
+        for i in range(HEIGHT, HEIGHT+1): #crossing the bottom border
+            for j in range(WIDTH+1):
+                if self.ahead.crossed(Point(j,i)):
+                    return True
+        for i in range(WIDTH-1, WIDTH+1):   #crossing the right border
+            for j in range(HEIGHT+1):
+                if self.ahead.crossed(Point(i,j)):
+                    return True
 
-
-
-        # else:                     #game over when any other key pressed
-        #     print ("Game over!")
-        #     sys.exit(0)
+    def eatbody(self):
+        #head = self.GetNextPoint()
+        for i in self.body:
+            if self.ahead.crossed(i):
+                return True
 
 
 class Food(Point):
     def __init__(self, sym):
-        self.x = randint(1, MAX_X)
-        self.y = randint(1, MAX_Y)
+        self.x = randint(2, MAX_X)
+        self.y = randint(2, MAX_Y)
         self.sym = sym
 
     def render(self):
         food = Point(self.x, self.y, self.sym)
         food.draw()
-
-    # def reset(self):
-    #     self.x = randint(1, MAX_X)
-    #     self.y = randint(1, MAX_Y)
-    #     self.sym = sym
-        
-
+     
 
 class Direction(object):
     LEFT = 0
@@ -187,7 +161,9 @@ class Direction(object):
     UP = 2
     DOWN = 3
 
-
+def gameOver():
+    print ("Game over!")
+    sys.exit(0)
 
 
 def main():
@@ -201,13 +177,8 @@ def main():
     window.border(0)
 
     p1 = Point(50,20,'*')
-    p2 = Point(100, 40)
+    p2 = Point(2, 20)
     fsym = '@'
-
-    # h1 = HorizontalLine(3,10,20,"+")
-    # h1.pappend()    
-    # h2 = VerticalLine(3, 20, 25, "-")
-    # h2.pappend()
     snake = Snake(p1, 4, Direction.LEFT, window)
     food = Food(fsym)
 
@@ -215,24 +186,20 @@ def main():
         window.clear()
         window.border(0)
         snake.render()
-        #food.render()
         window.addstr(0, 5, 'George the Snake')
-        window.addstr(29, 5, snake.score)
         event = window.getch()
 
         while True:
             event = window.getch()
             food.render()
-            #window.addstr(29, 5, snake.score)
-            #snake.eat(food)
             if snake.eat(food):
                 food.__init__(fsym)
                 food.render()
             snake.get(event) 
             snake.update()
             sleep(0.1)
-        # if snake.nabrak:
-        #     break
+            if snake.hitborder() or snake.eatbody():
+                gameOver()
 
     curses.endwin()
     
