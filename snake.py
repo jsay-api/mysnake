@@ -24,7 +24,6 @@ class Point(object):
     
     def draw(self):
         print("\033[%d;%dH%s" % (self.y, self.x, self.sym))
-        #self.window.addstr(self.y, self.x, self.sym)  
 
     def shift(self, offset, direction):
         if direction == Direction.RIGHT:
@@ -45,8 +44,6 @@ class Point(object):
 
 
 class Figure(object):
-    # def __init__(self):
-    #   self.plist = []
     plist = [] 
     def ldraw(self):
         for i in self.plist: 
@@ -54,7 +51,6 @@ class Figure(object):
 
 
 class Snake(Figure):
-    #body = []
     def __init__(self, tail, length, direction, window):
         self.body = []
         self.tail = tail
@@ -97,33 +93,25 @@ class Snake(Figure):
                 key = self.window.getch()
         elif event == KEY_UP:
             self.direction = Direction.UP
-            #sleep(0.1)
         elif event == KEY_LEFT:
             self.direction = Direction.LEFT
-            #sleep(0.1)
         elif event == KEY_DOWN:
             self.direction = Direction.DOWN
-            #sleep(0.1)
         elif event == KEY_RIGHT:
             self.direction = Direction.RIGHT
-            #sleep(0.1)
         elif event == 27:
             gameOver()
 
 
     def eat(self, food):
-        #head = self.GetNextPoint()
         if self.ahead.crossed(food):
             food.sym = self.ahead.sym
             self.body.append(food)
             food.clear()
             self.update()
-            # food.__init__('$')
-            # food.render()
             return True
 
     def hitborder(self):
-        #head = self.GetNextPoint()
         for i in range(2):  #crossing top and left borders
             for j in range(WIDTH+1):
                 if self.ahead.crossed(Point(i,j)) or self.ahead.crossed(Point(j,i)):
@@ -138,7 +126,6 @@ class Snake(Figure):
                     return True
 
     def eatbody(self):
-        #head = self.GetNextPoint()
         for i in self.body:
             if self.ahead.crossed(i):
                 return True
@@ -167,7 +154,6 @@ def gameOver():
 
 
 def main():
-    #os.system("clear")
     curses.initscr()
     window = curses.newwin(HEIGHT, WIDTH, 0, 0)
     window.timeout(TIMEOUT)
